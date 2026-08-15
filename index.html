@@ -68,7 +68,6 @@
       overflow-y: auto;
     }
 
-    /* 搜尋欄 */
     .search-box {
       width: 100%;
       padding: 12px;
@@ -80,27 +79,35 @@
       font-size: 0.95rem;
     }
 
-    /* 卡片列表 */
     .card {
       background-color: var(--card-bg);
       border-radius: 12px;
-      padding: 16px;
+      padding: 12px 16px;
       margin-bottom: 12px;
       border: 1px solid var(--border-color);
       cursor: pointer;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      transition: transform 0.1s;
+      gap: 12px;
     }
 
-    .card:active {
-      transform: scale(0.98);
+    .card-img-thumb {
+      width: 50px;
+      height: 50px;
+      border-radius: 8px;
+      object-fit: cover;
+      background-color: #2a2a2a;
+      border: 1px solid var(--border-color);
+    }
+
+    .card-info {
+      flex: 1;
     }
 
     .card-title {
       font-weight: bold;
-      font-size: 1.1rem;
+      font-size: 1rem;
       margin-bottom: 4px;
     }
 
@@ -114,12 +121,12 @@
       border-radius: 6px;
       font-size: 0.75rem;
       font-weight: bold;
+      white-space: nowrap;
     }
 
     .badge-in { background-color: #065f46; color: #a7f3d0; }
     .badge-out { background-color: #991b1b; color: #fecaca; }
 
-    /* 按鈕 */
     .btn {
       width: 100%;
       padding: 12px;
@@ -133,15 +140,9 @@
       margin-top: 12px;
     }
 
-    .btn-secondary {
-      background-color: #374151;
-    }
+    .btn-secondary { background-color: #374151; }
+    .btn-success { background-color: #059669; }
 
-    .btn-success {
-      background-color: #059669;
-    }
-
-    /* 表單元件 */
     .form-group {
       margin-bottom: 16px;
     }
@@ -161,6 +162,30 @@
       background-color: var(--card-bg);
       color: white;
       font-size: 0.95rem;
+    }
+
+    /* 圖片上傳區塊 */
+    .image-upload-box {
+      width: 100%;
+      height: 180px;
+      border: 2px dashed var(--border-color);
+      border-radius: 8px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      background-size: cover;
+      background-position: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .image-upload-box span {
+      background: rgba(0,0,0,0.6);
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 0.85rem;
     }
 
     /* Chip 選項欄 */
@@ -185,7 +210,12 @@
       color: white;
     }
 
-    /* AI 輸出區塊 */
+    .chip-add {
+      border-style: dashed;
+      color: var(--accent-color);
+      border-color: var(--accent-color);
+    }
+
     .ai-box {
       background-color: #1e293b;
       border: 1px dashed #60a5fa;
@@ -226,6 +256,15 @@
     <!-- 畫面 3: 編輯與新增表單 -->
     <div id="step2" class="hidden">
       <form id="equipForm" onsubmit="saveItem(event)">
+        <!-- 上傳照片區塊 -->
+        <div class="form-group">
+          <label>器材照片</label>
+          <div id="imgPreview" class="image-upload-box" onclick="document.getElementById('photoInput').click()">
+            <span id="imgText">📷 點擊拍攝或選擇照片</span>
+          </div>
+          <input type="file" id="photoInput" accept="image/*" class="hidden" onchange="handleImageUpload(event)">
+        </div>
+
         <div class="form-group">
           <label>Model No. 型號</label>
           <input type="text" id="modelNo" class="form-control" placeholder="例: 50mm f/1.4" required>
@@ -272,18 +311,19 @@
 </div>
 
 <script>
-  // 資料庫 state
   const categories = ['Filter', '鏡頭', '相機', '機身', '前後蓋', '配件雜項'];
-  const brands = ['Nikon', 'Canon', 'Sony', 'Fujifilm', 'Leica'];
-  const conditions = ['A', 'B', '展示用'];
-
+  
+  // 從記憶體或預設載入自訂選單
+  let customBrands = JSON.parse(localStorage.getItem('john_camera_brands')) || ['Nikon', 'Canon', 'Sony', 'Fujifilm', 'Leica'];
+  let customConditions = JSON.parse(localStorage.getItem('john_camera_conditions')) || ['A', 'B', '展示用'];
   let db = JSON.parse(localStorage.getItem('john_camera_db')) || [];
+
   let currentCategory = 'Filter';
   let editingId = null;
-  let selectedBrand = 'Nikon';
-  let selectedCondition = 'A';
+  let selectedBrand = customBrands[0];
+  let selectedCondition = customConditions[0];
+  let currentImageData = '';
 
-  // 渲染主選單
   function renderCategories() {
     const container = document.getElementById('categoryList');
     container.innerHTML = categories.map(cat => {
@@ -317,7 +357,8 @@
     }
     container.innerHTML = list.map(item => `
       <div class="card" onclick="openForm('${item.id}')">
-        <div>
+        <img src="${item.image || 'data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'50\' height=\'50\'><rect width=\'100%\' height=\'100%\' fill=\'%232a2a2a\'/></svg>'}" class="card-img-thumb" />
+        <div class="card-info">
           <div class="card-title">${item.brand} ${item.modelNo}</div>
           <div class="card-sub">Condition: ${item.condition} | 位置: ${item.location || '未設定'}</div>
         </div>
@@ -338,33 +379,111 @@
     document.getElementById('location').value = item.location || '';
     document.getElementById('isSold').value = item.isSold ? 'true' : 'false';
 
-    selectedBrand = item.brand || 'Nikon';
-    selectedCondition = item.condition || 'A';
+    selectedBrand = item.brand || customBrands[0];
+    selectedCondition = item.condition || customConditions[0];
+    currentImageData = item.image || '';
 
-    renderChips('brandChips', brands, selectedBrand, (val) => { selectedBrand = val; updateAiPreview(); });
-    renderChips('conditionChips', conditions, selectedCondition, (val) => { selectedCondition = val; updateAiPreview(); });
+    updateImagePreview();
+
+    renderChips('brandChips', customBrands, selectedBrand, 
+      (val) => { selectedBrand = val; updateAiPreview(); },
+      () => addCustomOption('brand')
+    );
+
+    renderChips('conditionChips', customConditions, selectedCondition, 
+      (val) => { selectedCondition = val; updateAiPreview(); },
+      () => addCustomOption('condition')
+    );
 
     showStep(2);
     updateAiPreview();
 
-    // 監聽輸入即時更新 AI 預覽
     document.getElementById('modelNo').oninput = updateAiPreview;
     document.getElementById('diameter').oninput = updateAiPreview;
     document.getElementById('location').oninput = updateAiPreview;
   }
 
-  function renderChips(containerId, options, currentValue, onClick) {
+  // 照片上傳處理 (壓縮壓縮圖檔後儲存)
+  function handleImageUpload(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function(evt) {
+      const img = new Image();
+      img.onload = function() {
+        const canvas = document.createElement('canvas');
+        const MAX_WIDTH = 600;
+        let width = img.width;
+        let height = img.height;
+
+        if (width > MAX_WIDTH) {
+          height *= MAX_WIDTH / width;
+          width = MAX_WIDTH;
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+
+        currentImageData = canvas.toDataURL('image/jpeg', 0.7);
+        updateImagePreview();
+      };
+      img.src = evt.target.result;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function updateImagePreview() {
+    const box = document.getElementById('imgPreview');
+    const text = document.getElementById('imgText');
+    if (currentImageData) {
+      box.style.backgroundImage = `url('${currentImageData}')`;
+      text.innerText = '🔄 點擊換一張照片';
+    } else {
+      box.style.backgroundImage = 'none';
+      text.innerText = '📷 點擊拍攝或選擇照片';
+    }
+  }
+
+  // 渲染 Chip 並提供自訂新增按鈕
+  function renderChips(containerId, options, currentValue, onClick, onAdd) {
     const container = document.getElementById(containerId);
-    container.innerHTML = options.map(opt => `
+    let html = options.map(opt => `
       <div class="chip ${opt === currentValue ? 'active' : ''}" onclick="
         this.parentNode.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
         this.classList.add('active');
       ">${opt}</div>
     `).join('');
 
-    container.querySelectorAll('.chip').forEach((chip, idx) => {
+    html += `<div class="chip chip-add">＋ 自訂</div>`;
+    container.innerHTML = html;
+
+    const chips = container.querySelectorAll('.chip:not(.chip-add)');
+    chips.forEach((chip, idx) => {
       chip.addEventListener('click', () => onClick(options[idx]));
     });
+
+    container.querySelector('.chip-add').addEventListener('click', onAdd);
+  }
+
+  // 新增自訂選項
+  function addCustomOption(type) {
+    const newVal = prompt(type === 'brand' ? '請輸入新增的品牌名稱：' : '請輸入新增的 Condition 狀態：');
+    if (newVal && newVal.trim() !== '') {
+      const trimmed = newVal.trim();
+      if (type === 'brand') {
+        if (!customBrands.includes(trimmed)) customBrands.push(trimmed);
+        selectedBrand = trimmed;
+        localStorage.setItem('john_camera_brands', JSON.stringify(customBrands));
+      } else {
+        if (!customConditions.includes(trimmed)) customConditions.push(trimmed);
+        selectedCondition = trimmed;
+        localStorage.setItem('john_camera_conditions', JSON.stringify(customConditions));
+      }
+      openForm(editingId);
+    }
   }
 
   function updateAiPreview() {
@@ -378,7 +497,7 @@
 
     let text = `📦 【約翰相機行】${selectedBrand} ${model}`;
     if (dia) text += ` (${dia}mm)`;
-    text += `\n- 品項: ${selectedCondition}\n- 存放位置: ${loc}\n\n💰 AI 參考估價：NT$ ${basePrice.toLocaleString()}`;
+    text += `\n- 品項: ${selectedCondition}\n- 存放位置: ${loc}\n- 附照片: ${currentImageData ? '有' : '無'}\n\n💰 AI 參考估價：NT$ ${basePrice.toLocaleString()}`;
 
     document.getElementById('aiPreview').innerText = text;
   }
@@ -393,7 +512,8 @@
       diameter: document.getElementById('diameter').value,
       condition: selectedCondition,
       location: document.getElementById('location').value,
-      isSold: document.getElementById('isSold').value === 'true'
+      isSold: document.getElementById('isSold').value === 'true',
+      image: currentImageData
     };
 
     if (editingId) {
@@ -440,7 +560,8 @@
 
     resultsContainer.innerHTML = matches.map(item => `
       <div class="card" onclick="currentCategory='${item.category}'; openForm('${item.id}')">
-        <div>
+        <img src="${item.image || 'data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'50\' height=\'50\'><rect width=\'100%\' height=\'100%\' fill=\'%232a2a2a\'/></svg>'}" class="card-img-thumb" />
+        <div class="card-info">
           <div class="card-title">${item.brand} ${item.modelNo} (${item.category})</div>
           <div class="card-sub">位置: ${item.location || '未設定'}</div>
         </div>
@@ -470,7 +591,6 @@
     });
   }
 
-  // 初始化
   renderCategories();
 </script>
 </body>
