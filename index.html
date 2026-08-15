@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>約翰相機行 - 器材管理系統</title>
+  <style>
+    :root {
+      --bg-color: #121212;
+      --card-bg: #1e1e1e;
+      --accent-color: #3b82f6;
+      --text-color: #f3f4f6;
+      --text-muted: #9ca3af;
+      --border-color: #374151;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      display: flex;
+      justify-content: center;
+      min-height: 100vh;
+    }
+
+    .app-container {
+      width: 100%;
+      max-width: 480px;
+      background-color: #18181b;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 0 20px rgba(0,0,0,0.5);
+    }
+
+    header {
+      padding: 16px;
+      background-color: var(--card-bg);
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    header h1 {
+      font-size: 1.25rem;
+      font-weight: bold;
+    }
+
+    .back-btn {
+      background: none;
+      border: none;
+      color: var(--accent-color);
+      font-size: 1rem;
+      cursor: pointer;
+      display: none;
+    }
+
+    .content {
+      padding: 16px;
+      flex: 1;
+      overflow-y: auto;
+    }
+
+    /* 搜尋欄 */
+    .search-box {
+      width: 100%;
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+      background-color: var(--card-bg);
+      color: white;
+      margin-bottom: 16px;
+      font-size: 0.95rem;
+    }
+
+    /* 卡片列表 */
+    .card {
+      background-color: var(--card-bg);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 12px;
+      border: 1px solid var(--border-color);
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: transform 0.1s;
+    }
+
+    .card:active {
+      transform: scale(0.98);
+    }
+
+    .card-title {
+      font-weight: bold;
+      font-size: 1.1rem;
+      margin-bottom: 4px;
+    }
+
+    .card-sub {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    .badge {
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: bold;
+    }
+
+    .badge-in { background-color: #065f46; color: #a7f3d0; }
+    .badge-out { background-color: #991b1b; color: #fecaca; }
+
+    /* 按鈕 */
+    .btn {
+      width: 100%;
+      padding: 12px;
+      border-radius: 8px;
+      border: none;
+      background-color: var(--accent-color);
+      color: white;
+      font-weight: bold;
+      font-size: 1rem;
+      cursor: pointer;
+      margin-top: 12px;
+    }
+
+    .btn-secondary {
+      background-color: #374151;
+    }
+
+    .btn-success {
+      background-color: #059669;
+    }
+
+    /* 表單元件 */
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    .form-control {
+      width: 100%;
+      padding: 10px;
+      border-radius: 6px;
+      border: 1px solid var(--border-color);
+      background-color: var(--card-bg);
+      color: white;
+      font-size: 0.95rem;
+    }
+
+    /* Chip 選項欄 */
+    .chip-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .chip {
+      padding: 6px 14px;
+      border-radius: 20px;
+      background-color: var(--card-bg);
+      border: 1px solid var(--border-color);
+      font-size: 0.85rem;
+      cursor: pointer;
+    }
+
+    .chip.active {
+      background-color: var(--accent-color);
+      border-color: var(--accent-color);
+      color: white;
+    }
+
+    /* AI 輸出區塊 */
+    .ai-box {
+      background-color: #1e293b;
+      border: 1px dashed #60a5fa;
+      border-radius: 8px;
+      padding: 12px;
+      font-size: 0.9rem;
+      white-space: pre-wrap;
+      line-height: 1.5;
+      margin-top: 8px;
+    }
+
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+
+<div class="app-container">
+  <header>
+    <button id="backBtn" class="back-btn" onclick="goBack()">← 返回</button>
+    <h1 id="headerTitle">約翰相機行</h1>
+    <div style="width: 40px;"></div>
+  </header>
+
+  <div class="content">
+    <!-- 畫面 1: 分類主選單與搜尋 -->
+    <div id="step0">
+      <input type="text" id="searchInput" class="search-box" placeholder="搜尋全站 Model No.、品牌或位置..." oninput="handleSearch()">
+      <div id="searchResults" class="hidden"></div>
+      <div id="categoryList"></div>
+    </div>
+
+    <!-- 畫面 2: 分類器材總覽 -->
+    <div id="step1" class="hidden">
+      <button class="btn" style="margin-bottom: 16px;" onclick="openForm(null)">＋ 新增器材</button>
+      <div id="equipmentList"></div>
+    </div>
+
+    <!-- 畫面 3: 編輯與新增表單 -->
+    <div id="step2" class="hidden">
+      <form id="equipForm" onsubmit="saveItem(event)">
+        <div class="form-group">
+          <label>Model No. 型號</label>
+          <input type="text" id="modelNo" class="form-control" placeholder="例: 50mm f/1.4" required>
+        </div>
+
+        <div class="form-group" id="diameterGroup">
+          <label>直徑 / 口徑 (mm)</label>
+          <input type="text" id="diameter" class="form-control" placeholder="例: 67mm">
+        </div>
+
+        <div class="form-group">
+          <label>品牌</label>
+          <div class="chip-group" id="brandChips"></div>
+        </div>
+
+        <div class="form-group">
+          <label>Condition 品項狀況</label>
+          <div class="chip-group" id="conditionChips"></div>
+        </div>
+
+        <div class="form-group">
+          <label>存放位置</label>
+          <input type="text" id="location" class="form-control" placeholder="例: 防潮箱 A-1">
+        </div>
+
+        <div class="form-group">
+          <label>售出狀態</label>
+          <select id="isSold" class="form-control">
+            <option value="false">在庫中</option>
+            <option value="true">已售出</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>🤖 AI 估價與一鍵生成賣場資訊</label>
+          <div id="aiPreview" class="ai-box">填寫型號與品牌後自動生成...</div>
+          <button type="button" class="btn btn-secondary" onclick="copyAiText()">複製賣場內文</button>
+        </div>
+
+        <button type="submit" class="btn btn-success">儲存資料</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  // 資料庫 state
+  const categories = ['Filter', '鏡頭', '相機', '機身', '前後蓋', '配件雜項'];
+  const brands = ['Nikon', 'Canon', 'Sony', 'Fujifilm', 'Leica'];
+  const conditions = ['A', 'B', '展示用'];
+
+  let db = JSON.parse(localStorage.getItem('john_camera_db')) || [];
+  let currentCategory = 'Filter';
+  let editingId = null;
+  let selectedBrand = 'Nikon';
+  let selectedCondition = 'A';
+
+  // 渲染主選單
+  function renderCategories() {
+    const container = document.getElementById('categoryList');
+    container.innerHTML = categories.map(cat => {
+      const count = db.filter(item => item.category === cat).length;
+      return `
+        <div class="card" onclick="selectCategory('${cat}')">
+          <div>
+            <div class="card-title">${cat}</div>
+            <div class="card-sub">庫存數量: ${count} 項</div>
+          </div>
+          <div>➔</div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  function selectCategory(cat) {
+    currentCategory = cat;
+    document.getElementById('headerTitle').innerText = `${cat} 總覽`;
+    document.getElementById('backBtn').style.display = 'block';
+    showStep(1);
+    renderEquipmentList();
+  }
+
+  function renderEquipmentList() {
+    const list = db.filter(item => item.category === currentCategory);
+    const container = document.getElementById('equipmentList');
+    if (list.length === 0) {
+      container.innerHTML = '<div style="text-align:center; color:var(--text-muted); margin-top:40px;">目前尚無資料，點擊上方按鈕新增</div>';
+      return;
+    }
+    container.innerHTML = list.map(item => `
+      <div class="card" onclick="openForm('${item.id}')">
+        <div>
+          <div class="card-title">${item.brand} ${item.modelNo}</div>
+          <div class="card-sub">Condition: ${item.condition} | 位置: ${item.location || '未設定'}</div>
+        </div>
+        <span class="badge ${item.isSold ? 'badge-out' : 'badge-in'}">${item.isSold ? '已售出' : '在庫'}</span>
+      </div>
+    `).join('');
+  }
+
+  function openForm(id) {
+    editingId = id;
+    const item = db.find(i => i.id === id) || {};
+    
+    document.getElementById('headerTitle').innerText = id ? '編輯器材' : '新增器材';
+    document.getElementById('backBtn').style.display = 'block';
+
+    document.getElementById('modelNo').value = item.modelNo || '';
+    document.getElementById('diameter').value = item.diameter || '';
+    document.getElementById('location').value = item.location || '';
+    document.getElementById('isSold').value = item.isSold ? 'true' : 'false';
+
+    selectedBrand = item.brand || 'Nikon';
+    selectedCondition = item.condition || 'A';
+
+    renderChips('brandChips', brands, selectedBrand, (val) => { selectedBrand = val; updateAiPreview(); });
+    renderChips('conditionChips', conditions, selectedCondition, (val) => { selectedCondition = val; updateAiPreview(); });
+
+    showStep(2);
+    updateAiPreview();
+
+    // 監聽輸入即時更新 AI 預覽
+    document.getElementById('modelNo').oninput = updateAiPreview;
+    document.getElementById('diameter').oninput = updateAiPreview;
+    document.getElementById('location').oninput = updateAiPreview;
+  }
+
+  function renderChips(containerId, options, currentValue, onClick) {
+    const container = document.getElementById(containerId);
+    container.innerHTML = options.map(opt => `
+      <div class="chip ${opt === currentValue ? 'active' : ''}" onclick="
+        this.parentNode.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+        this.classList.add('active');
+      ">${opt}</div>
+    `).join('');
+
+    container.querySelectorAll('.chip').forEach((chip, idx) => {
+      chip.addEventListener('click', () => onClick(options[idx]));
+    });
+  }
+
+  function updateAiPreview() {
+    const model = document.getElementById('modelNo').value || '未指定型號';
+    const dia = document.getElementById('diameter').value;
+    const loc = document.getElementById('location').value || '未設定';
+
+    let basePrice = 3000;
+    if (selectedBrand === 'Leica') basePrice += 18000;
+    if (selectedCondition === 'A') basePrice += 2500;
+
+    let text = `📦 【約翰相機行】${selectedBrand} ${model}`;
+    if (dia) text += ` (${dia}mm)`;
+    text += `\n- 品項: ${selectedCondition}\n- 存放位置: ${loc}\n\n💰 AI 參考估價：NT$ ${basePrice.toLocaleString()}`;
+
+    document.getElementById('aiPreview').innerText = text;
+  }
+
+  function saveItem(e) {
+    e.preventDefault();
+    const newItem = {
+      id: editingId || Date.now().toString(),
+      category: currentCategory,
+      brand: selectedBrand,
+      modelNo: document.getElementById('modelNo').value,
+      diameter: document.getElementById('diameter').value,
+      condition: selectedCondition,
+      location: document.getElementById('location').value,
+      isSold: document.getElementById('isSold').value === 'true'
+    };
+
+    if (editingId) {
+      const idx = db.findIndex(i => i.id === editingId);
+      db[idx] = newItem;
+    } else {
+      db.push(newItem);
+    }
+
+    localStorage.setItem('john_camera_db', JSON.stringify(db));
+    selectCategory(currentCategory);
+  }
+
+  function copyAiText() {
+    const text = document.getElementById('aiPreview').innerText;
+    navigator.clipboard.writeText(text);
+    alert('已成功複製 AI 賣場資訊！');
+  }
+
+  function handleSearch() {
+    const query = document.getElementById('searchInput').value.toLowerCase();
+    const resultsContainer = document.getElementById('searchResults');
+    const categoryList = document.getElementById('categoryList');
+
+    if (!query) {
+      resultsContainer.classList.add('hidden');
+      categoryList.classList.remove('hidden');
+      return;
+    }
+
+    const matches = db.filter(i => 
+      i.modelNo.toLowerCase().includes(query) || 
+      i.brand.toLowerCase().includes(query) ||
+      i.location.toLowerCase().includes(query)
+    );
+
+    categoryList.classList.add('hidden');
+    resultsContainer.classList.remove('hidden');
+
+    if (matches.length === 0) {
+      resultsContainer.innerHTML = '<div style="text-align:center; color:var(--text-muted); margin-top:20px;">查無相關器材</div>';
+      return;
+    }
+
+    resultsContainer.innerHTML = matches.map(item => `
+      <div class="card" onclick="currentCategory='${item.category}'; openForm('${item.id}')">
+        <div>
+          <div class="card-title">${item.brand} ${item.modelNo} (${item.category})</div>
+          <div class="card-sub">位置: ${item.location || '未設定'}</div>
+        </div>
+        <span class="badge ${item.isSold ? 'badge-out' : 'badge-in'}">${item.isSold ? '已售出' : '在庫'}</span>
+      </div>
+    `).join('');
+  }
+
+  function goBack() {
+    const step1 = !document.getElementById('step1').classList.contains('hidden');
+    const step2 = !document.getElementById('step2').classList.contains('hidden');
+
+    if (step2) {
+      showStep(1);
+      document.getElementById('headerTitle').innerText = `${currentCategory} 總覽`;
+    } else if (step1) {
+      showStep(0);
+      document.getElementById('headerTitle').innerText = '約翰相機行';
+      document.getElementById('backBtn').style.display = 'none';
+      renderCategories();
+    }
+  }
+
+  function showStep(stepNum) {
+    [0, 1, 2].forEach(n => {
+      document.getElementById(`step${n}`).classList.toggle('hidden', n !== stepNum);
+    });
+  }
+
+  // 初始化
+  renderCategories();
+</script>
+</body>
+</html>
