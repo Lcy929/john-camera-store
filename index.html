@@ -2,172 +2,179 @@
 <html lang="zh-TW">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>約翰相機行</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>John Camera Store - 二手相機與濾鏡管理系統</title>
   <style>
     :root {
-      --bg-color: #121212;
-      --card-bg: #1e1e1e;
+      --bg-color: #121214;
+      --card-bg: #1c1c1e;
       --accent-color: #3b82f6;
-      --text-color: #f3f4f6;
-      --text-muted: #9ca3af;
-      --border-color: #374151;
+      --accent-hover: #2563eb;
+      --danger-color: #ef4444;
+      --success-color: #10b981;
+      --text-main: #f3f4f6;
+      --text-sub: #9ca3af;
+      --border-color: #2e2e32;
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-    body { background-color: var(--bg-color); color: var(--text-color); display: flex; justify-content: center; min-height: 100vh; }
-    .app-container { width: 100%; max-width: 480px; background-color: #18181b; min-height: 100vh; display: flex; flex-direction: column; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; -webkit-tap-highlight-color: transparent; }
+    body { background-color: var(--bg-color); color: var(--text-main); padding: 16px; max-width: 600px; margin: 0 auto; min-height: 100vh; padding-bottom: 60px; }
     
-    header { padding: 16px; background-color: var(--card-bg); border-bottom: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 10; }
-    header h1 { font-size: 1.25rem; font-weight: bold; }
-    .back-btn { background: none; border: none; color: var(--accent-color); font-size: 1rem; cursor: pointer; display: none; }
+    header { text-align: center; margin-bottom: 24px; position: relative; }
+    h1 { font-size: 1.5rem; font-weight: 700; color: #fff; }
+    .subtitle { font-size: 0.85rem; color: var(--text-sub); margin-top: 4px; }
+    .sync-status { font-size: 0.75rem; margin-top: 6px; color: var(--accent-color); }
 
-    .sync-status { font-size: 0.75rem; color: #34d399; text-align: center; padding: 4px; background: #064e3b; display: none; }
+    .category-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 24px; }
+    .category-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 16px; text-align: center; font-size: 1.1rem; font-weight: 600; cursor: pointer; transition: all 0.2s; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 90px; }
+    .category-card:active { transform: scale(0.98); background: #252528; }
+    .category-count { font-size: 0.8rem; color: var(--text-sub); font-weight: normal; margin-top: 4px; }
+    .category-card.archived-card { grid-column: span 2; border-color: #374151; background: #18181b; color: #9ca3af; }
 
-    .content { padding: 16px; flex: 1; overflow-y: auto; }
-    .search-box { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--border-color); background-color: var(--card-bg); color: white; margin-bottom: 16px; font-size: 0.95rem; }
-    
-    .card { background-color: var(--card-bg); border-radius: 12px; padding: 12px 16px; margin-bottom: 12px; border: 1px solid var(--border-color); cursor: pointer; display: flex; justify-content: space-between; align-items: center; gap: 12px; }
-    .card-img-thumb { width: 50px; height: 50px; border-radius: 8px; object-fit: cover; background-color: #2a2a2a; border: 1px solid var(--border-color); }
-    .card-info { flex: 1; }
-    .card-title { font-weight: bold; font-size: 1rem; margin-bottom: 4px; }
-    .card-sub { font-size: 0.85rem; color: var(--text-muted); }
-    
-    .badge { padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: bold; white-space: nowrap; }
-    .badge-in { background-color: #065f46; color: #a7f3d0; }
-    .badge-out { background-color: #991b1b; color: #fecaca; }
+    .btn { display: inline-flex; align-items: center; justify-content: center; width: 100%; padding: 12px; border-radius: 8px; font-weight: 600; cursor: pointer; border: none; font-size: 1rem; transition: background 0.2s; }
+    .btn-primary { background-color: var(--accent-color); color: white; margin-bottom: 16px; }
+    .btn-primary:active { background-color: var(--accent-hover); }
+    .btn-secondary { background: #27272a; color: var(--text-main); border: 1px solid var(--border-color); }
+    .btn-success { background-color: var(--success-color); color: white; }
+    .btn-danger { background-color: var(--danger-color); color: white; }
 
-    .btn { width: 100%; padding: 12px; border-radius: 8px; border: none; background-color: var(--accent-color); color: white; font-weight: bold; font-size: 1rem; cursor: pointer; margin-top: 12px; }
-    .btn-secondary { background-color: #374151; }
-    .btn-success { background-color: #059669; }
+    .nav-bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+    .back-btn { background: none; border: none; color: var(--accent-color); font-size: 1rem; cursor: pointer; font-weight: 600; }
+
+    .item-list { display: flex; flex-direction: column; gap: 12px; }
+    .item-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 12px; display: flex; gap: 12px; align-items: center; cursor: pointer; position: relative; user-select: none; -webkit-user-select: none; }
+    .item-card:active { background: #252528; }
+    .item-img { width: 64px; height: 64px; border-radius: 8px; object-fit: cover; background: #27272a; flex-shrink: 0; }
+    .item-info { flex: 1; overflow: hidden; }
+    .item-title { font-weight: 600; font-size: 1rem; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .item-sub { font-size: 0.8rem; color: var(--text-sub); }
+    .badge { padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 600; align-self: flex-start; }
+    .badge-in { background: rgba(16, 185, 129, 0.2); color: #34d399; }
+    .badge-out { background: rgba(239, 68, 68, 0.2); color: #f87171; }
 
     .form-group { margin-bottom: 16px; }
-    .form-group label { display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 6px; }
-    .form-control { width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border-color); background-color: var(--card-bg); color: white; font-size: 0.95rem; }
-
-    .image-upload-box { width: 100%; height: 160px; border: 2px dashed var(--border-color); border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer; background-size: cover; background-position: center; position: relative; }
-    .image-upload-box span { background: rgba(0,0,0,0.7); padding: 6px 12px; border-radius: 20px; font-size: 0.85rem; }
+    label { display: block; font-size: 0.85rem; color: var(--text-sub); margin-bottom: 6px; font-weight: 500; }
+    .form-control { width: 100%; padding: 10px 12px; background: #18181b; border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-main); font-size: 0.95rem; }
+    .form-control:focus { outline: none; border-color: var(--accent-color); }
+    textarea.form-control { min-height: 80px; resize: vertical; }
 
     .chip-group { display: flex; flex-wrap: wrap; gap: 8px; }
-    .chip { padding: 6px 14px; border-radius: 20px; background-color: var(--card-bg); border: 1px solid var(--border-color); font-size: 0.85rem; cursor: pointer; user-select: none; -webkit-user-select: none; }
-    .chip.active { background-color: var(--accent-color); border-color: var(--accent-color); color: white; }
-    .chip-add { border-style: dashed; color: var(--accent-color); border-color: var(--accent-color); }
+    .chip { padding: 6px 12px; background: #27272a; border: 1px solid var(--border-color); border-radius: 20px; font-size: 0.85rem; cursor: pointer; color: var(--text-sub); user-select: none; -webkit-user-select: none; }
+    .chip.selected { background: var(--accent-color); color: white; border-color: var(--accent-color); }
+    .chip-add { background: transparent; border: 1px dashed var(--accent-color); color: var(--accent-color); }
 
-    .ai-box { background-color: #1e293b; border: 1px dashed #60a5fa; border-radius: 8px; padding: 12px; font-size: 0.9rem; white-space: pre-wrap; line-height: 1.5; margin-top: 8px; }
+    .img-upload-box { width: 100%; height: 140px; border: 2px dashed var(--border-color); border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; color: var(--text-sub); overflow: hidden; position: relative; }
+    .img-upload-box img { width: 100%; height: 100%; object-fit: contain; }
+
+    .ai-box { background: #18181b; border: 1px solid var(--border-color); border-radius: 8px; padding: 12px; font-size: 0.85rem; color: #d1d5db; white-space: pre-wrap; margin-bottom: 8px; min-height: 60px; word-break: break-all; }
+
     .hidden { display: none !important; }
   </style>
 </head>
 <body>
 
-<div class="app-container">
-  <header>
-    <button id="backBtn" class="back-btn" onclick="goBack()">← 返回</button>
-    <h1 id="headerTitle">約翰相機行</h1>
-    <div style="width: 40px;"></div>
-  </header>
-  <div id="syncStatus" class="sync-status">🔄 正在同步雲端資料...</div>
-
-  <div class="content">
-    <div id="step0">
-      <input type="text" id="searchInput" class="search-box" placeholder="搜尋全站 Model No.、品牌或位置..." oninput="handleSearch()">
-      <div id="searchResults" class="hidden"></div>
-      <div id="categoryList"></div>
-    </div>
-
-    <div id="step1" class="hidden">
-      <button class="btn" style="margin-bottom: 16px;" onclick="openForm(null)">＋ 新增器材</button>
-      <div id="equipmentList"></div>
-    </div>
-
-    <div id="step2" class="hidden">
-      <form id="equipForm" onsubmit="saveItem(event)">
-        <div class="form-group">
-          <label>1. 器材圖片 (可拍攝/上傳)</label>
-          <div id="imgPreview" class="image-upload-box" onclick="document.getElementById('photoInput').click()">
-            <span id="imgText">📷 點擊拍攝或選擇照片</span>
-          </div>
-          <input type="file" id="photoInput" accept="image/*" class="hidden" onchange="handleImageUpload(event)">
-        </div>
-
-        <div class="form-group field-custom" id="fg-accessoryType">
-          <label>品項類型</label>
-          <div class="chip-group" id="accessoryTypeChips"></div>
-        </div>
-
-        <div class="form-group field-custom" id="fg-modelNo">
-          <label>Model No.</label>
-          <input type="text" id="modelNo" class="form-control" placeholder="請輸入型號">
-        </div>
-
-        <div class="form-group field-custom" id="fg-diameter">
-          <label>直徑 (mm)</label>
-          <input type="text" id="diameter" class="form-control" placeholder="例: 67mm">
-        </div>
-
-        <div class="form-group field-custom" id="fg-brand">
-          <label>品牌 (自訂標籤可長按編輯/刪除)</label>
-          <div class="chip-group" id="brandChips"></div>
-        </div>
-
-        <div class="form-group field-custom" id="fg-functionInput">
-          <label>功能</label>
-          <input type="text" id="functionText" class="form-control" placeholder="請輸入功能描述">
-        </div>
-        <div class="form-group field-custom" id="fg-functionChips">
-          <label>功能</label>
-          <div class="chip-group" id="functionChips"></div>
-        </div>
-
-        <div class="form-group field-custom" id="fg-appearance">
-          <label id="lbl-appearance">外觀 / 邊框</label>
-          <div class="chip-group" id="appearanceChips"></div>
-        </div>
-
-        <div class="form-group field-custom" id="fg-glass">
-          <label>玻璃顏色</label>
-          <div class="chip-group" id="glassChips"></div>
-        </div>
-
-        <div class="form-group field-custom" id="fg-condition">
-          <label>Condition 品項狀況</label>
-          <div class="chip-group" id="conditionChips"></div>
-        </div>
-
-        <div class="form-group field-custom" id="fg-conditionRemark">
-          <label>Condition 備註</label>
-          <input type="text" id="conditionRemark" class="form-control" placeholder="例如：包裝完整、有些微滑痕">
-        </div>
-
-        <div class="form-group field-custom" id="fg-packaging">
-          <label>原裝包裝</label>
-          <div class="chip-group" id="packagingChips"></div>
-        </div>
-
-        <div class="form-group field-custom" id="fg-location">
-          <label>存放位置</label>
-          <input type="text" id="location" class="form-control" placeholder="例: 防潮箱 A-1">
-        </div>
-
-        <div class="form-group">
-          <label>售出紀錄</label>
-          <div class="chip-group" id="soldChips"></div>
-        </div>
-
-        <div class="form-group" style="margin-top: 24px;">
-          <label>🤖 AI 估價與賣場格式生成</label>
-          <div id="aiPreview" class="ai-box">系統將自動產生格式...</div>
-          <button type="button" class="btn btn-secondary" onclick="copyAiText()">複製賣場內文</button>
-        </div>
-
-        <button type="submit" id="saveBtn" class="btn btn-success">儲存資料並同步至雲端</button>
-      </form>
-    </div>
+  <!-- 1. 分類選單頁面 -->
+  <div id="step1">
+    <header>
+      <h1>John Camera Store</h1>
+      <div class="subtitle">二手相機與濾鏡管理系統</div>
+      <div id="syncStatus" class="sync-status">雲端同步狀態：未設定 URL</div>
+    </header>
+    <div class="category-grid" id="categoryGrid"></div>
   </div>
-</div>
+
+  <!-- 2. 器材列表頁面 -->
+  <div id="step2" class="hidden">
+    <div class="nav-bar">
+      <button class="back-btn" onclick="showStep1()">← 返回</button>
+      <h2 id="listTitle" style="font-size: 1.2rem;">列表</h2>
+      <div style="width: 40px;"></div>
+    </div>
+    <button class="btn btn-primary" id="addNewBtn" onclick="showForm()">+ 新增器材</button>
+    <div class="item-list" id="itemList"></div>
+  </div>
+
+  <!-- 3. 新增/編輯表單頁面 -->
+  <div id="step3" class="hidden">
+    <div class="nav-bar">
+      <button class="back-btn" onclick="showStep2()">← 取消</button>
+      <h2 id="formTitle" style="font-size: 1.2rem;">新增器材</h2>
+      <div style="width: 40px;"></div>
+    </div>
+
+    <form id="equipmentForm" onsubmit="handleFormSubmit(event)">
+      <div class="form-group">
+        <label>1. 器材圖片 (可拍攝/上傳)</label>
+        <div class="img-upload-box" onclick="document.getElementById('fileInput').click()">
+          <span id="uploadPlaceholder">📷 點擊拍攝或選擇照片</span>
+          <img id="previewImg" class="hidden" src="" alt="預覽">
+        </div>
+        <input type="file" id="fileInput" accept="image/*" class="hidden" onchange="handleImageUpload(event)">
+      </div>
+
+      <div class="form-group">
+        <label>Model 型號/品名</label>
+        <input type="text" id="model" class="form-control" placeholder="請輸入型號" required oninput="generateAiText()">
+      </div>
+
+      <div class="form-group">
+        <label>品牌</label>
+        <div class="chip-group" id="brandChips"></div>
+      </div>
+
+      <div class="form-group" id="groupBorders">
+        <label>邊框顏色</label>
+        <div class="chip-group" id="borderChips"></div>
+      </div>
+
+      <div class="form-group" id="groupGlasses">
+        <label>玻璃顏色</label>
+        <div class="chip-group" id="glassChips"></div>
+      </div>
+
+      <div class="form-group" id="groupAccType">
+        <label>配件類別</label>
+        <div class="chip-group" id="accTypeChips"></div>
+      </div>
+
+      <div class="form-group">
+        <label>Condition 品項狀況</label>
+        <div class="chip-group" id="conditionChips"></div>
+      </div>
+
+      <div class="form-group">
+        <label>原裝包裝/盒裝</label>
+        <div class="chip-group" id="packageChips"></div>
+      </div>
+
+      <div class="form-group">
+        <label>功能描述/備註</label>
+        <textarea id="functionDesc" class="form-control" placeholder="請輸入功能細節或商品狀況" oninput="generateAiText()"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label>存放位置/編號</label>
+        <input type="text" id="location" class="form-control" placeholder="例: 防潮箱 A-1">
+      </div>
+
+      <div class="form-group">
+        <label>售出紀錄 / 狀態</label>
+        <div class="chip-group" id="soldChips"></div>
+      </div>
+
+      <div class="form-group" style="margin-top: 24px;">
+        <label>🤖 AI 估價與賣場格式生成</label>
+        <div id="aiPreview" class="ai-box">系統將自動產生格式...</div>
+        <button type="button" class="btn btn-secondary" onclick="copyAiText()">複製賣場內文</button>
+      </div>
+
+      <button type="submit" id="saveBtn" class="btn btn-success">儲存資料並同步至雲端</button>
+    </form>
+  </div>
 
 <script>
-  // 🔗 若有設定 Google Apps Script，可將 URL 貼於下方
-  const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyy4J8-lD77mm9syXAERTg9SYdlUEVWFxgR9L_u3SVbMGNfQhhEIfN6w31sgBIteAjCVw/exec';
+  // 🔗 Google Apps Script 部署 URL 貼於下方
+  const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyy4J8-ID77mm9syXAERTg9SYdlUEVWFxgR9L_u3SVbMGNfQhhElfN6w31sgBteAjCVw/exec';
 
   const categories = ['Filter', '鏡頭', '相機', '機身', '前後蓋', '配件雜項'];
 
@@ -202,11 +209,12 @@
         db = data;
         localStorage.setItem('john_camera_db', JSON.stringify(db));
         renderCategories();
-        if (!document.getElementById('step1').classList.contains('hidden')) renderEquipmentList();
+        if (!document.getElementById('step1').classList.contains('hidden')) {}
+        else if (!document.getElementById('step2').classList.contains('hidden')) { renderEquipmentList(); }
       }
       showStatus('✅ 雲端同步完成！');
     } catch (e) {
-      showStatus('⚠️ 雲端同步失敗，載入本機資料');
+      showStatus('⚠️ 雲端同步失敗，載入本地資料');
     }
   }
 
@@ -221,256 +229,306 @@
       });
       showStatus('✅ 儲存並同步成功！');
     } catch (e) {
-      showStatus('⚠️ 雲端備份失敗，但已存於本機');
+      showStatus('⚠️ 雲端同步失敗，已存於本機');
     }
   }
 
-  function showStatus(msg) {
-    const el = document.getElementById('syncStatus');
-    el.innerText = msg;
-    el.style.display = 'block';
-    setTimeout(() => { el.style.display = 'none'; }, 3000);
+  function showStatus(text) {
+    document.getElementById('syncStatus').innerText = text;
   }
 
-  function renderCategories() {
-    const container = document.getElementById('categoryList');
-    container.innerHTML = categories.map(cat => {
-      const count = db.filter(item => item.category === cat).length;
-      return `
-        <div class="card" onclick="selectCategory('${cat}')">
-          <div>
-            <div class="card-title">${cat}</div>
-            <div class="card-sub">庫存數量: ${count} 項</div>
-          </div>
-          <div>➔</div>
-        </div>
-      `;
-    }).join('');
+  // 頁面切換
+  function showStep1() {
+    document.getElementById('step1').classList.remove('hidden');
+    document.getElementById('step2').classList.add('hidden');
+    document.getElementById('step3').classList.add('hidden');
+    renderCategories();
   }
 
-  function selectCategory(cat) {
-    currentCategory = cat;
-    document.getElementById('headerTitle').innerText = `${cat} 總覽`;
-    document.getElementById('backBtn').style.display = 'block';
-    showStep(1);
+  function showStep2(cat) {
+    if (cat) currentCategory = cat;
+    document.getElementById('step1').classList.add('hidden');
+    document.getElementById('step2').classList.remove('hidden');
+    document.getElementById('step3').classList.add('hidden');
+
+    if (currentCategory === '__ARCHIVED__') {
+      document.getElementById('listTitle').innerText = '已下架 / 已售出商品';
+      document.getElementById('addNewBtn').classList.add('hidden');
+    } else {
+      document.getElementById('listTitle').innerText = `${currentCategory} 總覽`;
+      document.getElementById('addNewBtn').classList.remove('hidden');
+    }
     renderEquipmentList();
   }
 
+  // 首頁渲染（包含已下架分區）
+  function renderCategories() {
+    const grid = document.getElementById('categoryGrid');
+    grid.innerHTML = '';
+    
+    // 一般分類
+    categories.forEach(cat => {
+      const count = db.filter(item => item.category === cat && item.status !== '已售出').length;
+      const card = document.createElement('div');
+      card.className = 'category-card';
+      card.onclick = () => showStep2(cat);
+      card.innerHTML = `${cat} <div class="category-count">${count} 件在庫</div>`;
+      grid.appendChild(card);
+    });
+
+    // 已下架 / 已售出專區
+    const archivedCount = db.filter(item => item.status === '已售出').length;
+    const archivedCard = document.createElement('div');
+    archivedCard.className = 'category-card archived-card';
+    archivedCard.onclick = () => showStep2('__ARCHIVED__');
+    archivedCard.innerHTML = `📦 已下架商品 <div class="category-count">${archivedCount} 件已售出</div>`;
+    grid.appendChild(archivedCard);
+  }
+
+  // 器材列表渲染 (支援長按與右鍵刪除)
   function renderEquipmentList() {
-    const list = db.filter(item => item.category === currentCategory);
-    const container = document.getElementById('equipmentList');
-    if (list.length === 0) {
-      container.innerHTML = '<div style="text-align:center; color:var(--text-muted); margin-top:40px;">目前尚無資料，點擊上方按鈕新增</div>';
+    const list = document.getElementById('itemList');
+    list.innerHTML = '';
+
+    let items = [];
+    if (currentCategory === '__ARCHIVED__') {
+      items = db.filter(item => item.status === '已售出');
+    } else {
+      items = db.filter(item => item.category === currentCategory && item.status !== '已售出');
+    }
+
+    if (items.length === 0) {
+      list.innerHTML = `<div style="text-align:center; color: var(--text-sub); padding: 40px 0;">尚無資料</div>`;
       return;
     }
-    container.innerHTML = list.map(item => `
-      <div class="card" onclick="openForm('${item.id}')">
-        <img src="${item.image || 'data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'50\' height=\'50\'><rect width=\'100%\' height=\'100%\' fill=\'%232a2a2a\'/></svg>'}" class="card-img-thumb" />
-        <div class="card-info">
-          <div class="card-title">${item.brand || ''} ${item.modelNo || item.accessoryType || '器材'}</div>
-          <div class="card-sub">Condition: ${item.condition || '-'} | 位置: ${item.location || '未設定'}</div>
-        </div>
-        <span class="badge ${item.isSold ? 'badge-out' : 'badge-in'}">${item.isSold ? '已售出' : '在庫'}</span>
-      </div>
-    `).join('');
-  }
 
-  function openForm(id) {
-    editingId = id;
-    const item = db.find(i => i.id === id) || {};
+    items.forEach(item => {
+      const card = document.createElement('div');
+      card.className = 'item-card';
 
-    document.getElementById('headerTitle').innerText = id ? `編輯 ${currentCategory}` : `新增 ${currentCategory}`;
-    document.getElementById('backBtn').style.display = 'block';
+      // 點擊編輯
+      card.onclick = () => showForm(item.id);
 
-    currentImageData = item.image || '';
-    updateImagePreview();
+      // 長按 / 右鍵 刪除邏輯
+      let pressTimer = null;
+      const startPress = () => {
+        pressTimer = setTimeout(() => {
+          deleteEquipment(item.id, item.model);
+        }, 800);
+      };
+      const cancelPress = () => { if (pressTimer) clearTimeout(pressTimer); };
 
-    document.getElementById('modelNo').value = item.modelNo || '';
-    document.getElementById('diameter').value = item.diameter || '';
-    document.getElementById('functionText').value = item.functionText || '';
-    document.getElementById('conditionRemark').value = item.conditionRemark || '';
-    document.getElementById('location').value = item.location || '';
-
-    formState = {
-      brand: item.brand || customBrands[0],
-      accessoryType: item.accessoryType || customAccessoryTypes[0],
-      functionChip: item.functionChip || '',
-      appearance: item.appearance || '',
-      glass: item.glass || customGlasses[0],
-      condition: item.condition || 'A',
-      packaging: item.packaging || '',
-      isSold: item.isSold || false
-    };
-
-    document.querySelectorAll('.field-custom').forEach(el => el.classList.add('hidden'));
-
-    if (currentCategory === 'Filter') {
-      showFields(['fg-modelNo', 'fg-diameter', 'fg-brand', 'fg-functionInput', 'fg-appearance', 'fg-glass', 'fg-condition', 'fg-packaging', 'fg-location']);
-      document.getElementById('lbl-appearance').innerText = '邊框';
-      
-      renderChips('brandChips', customBrands, formState.brand, v => { formState.brand = v; updateAiPreview(); }, () => addCustom('brand'), 'brand');
-      renderChips('appearanceChips', customBordersFilter, formState.appearance || customBordersFilter[0], v => { formState.appearance = v; updateAiPreview(); }, () => addCustom('borderFilter'), 'borderFilter');
-      renderChips('glassChips', customGlasses, formState.glass, v => { formState.glass = v; updateAiPreview(); }, () => addCustom('glass'), 'glass');
-      renderChips('conditionChips', ['A', 'B'], formState.condition, v => { formState.condition = v; updateAiPreview(); });
-      renderChips('packagingChips', ['Hard Case', '紙盒'], formState.packaging || 'Hard Case', v => { formState.packaging = v; updateAiPreview(); });
-
-    } else if (currentCategory === '鏡頭') {
-      showFields(['fg-modelNo', 'fg-diameter', 'fg-brand', 'fg-functionChips', 'fg-appearance', 'fg-condition', 'fg-packaging', 'fg-location']);
-      document.getElementById('lbl-appearance').innerText = '外框';
-
-      renderChips('brandChips', customBrands, formState.brand, v => { formState.brand = v; updateAiPreview(); }, () => addCustom('brand'), 'brand');
-      renderChips('functionChips', ['Wide Angle', 'Standard', 'Tele', 'Marco', 'PC'], formState.functionChip || 'Standard', v => { formState.functionChip = v; updateAiPreview(); });
-      renderChips('appearanceChips', customBordersGeneral, formState.appearance || customBordersGeneral[0], v => { formState.appearance = v; updateAiPreview(); }, () => addCustom('borderGeneral'), 'borderGeneral');
-      renderChips('conditionChips', ['A', 'B'], formState.condition, v => { formState.condition = v; updateAiPreview(); });
-      renderChips('packagingChips', ['無', '紙盒'], formState.packaging || '無', v => { formState.packaging = v; updateAiPreview(); });
-
-    } else if (currentCategory === '相機' || currentCategory === '機身') {
-      showFields(['fg-modelNo', 'fg-brand', 'fg-functionChips', 'fg-appearance', 'fg-condition', 'fg-conditionRemark', 'fg-location']);
-      document.getElementById('lbl-appearance').innerText = '外觀';
-
-      renderChips('brandChips', customBrands, formState.brand, v => { formState.brand = v; updateAiPreview(); }, () => addCustom('brand'), 'brand');
-      renderChips('functionChips', ['數碼', '菲林'], formState.functionChip || '數碼', v => { formState.functionChip = v; updateAiPreview(); });
-      renderChips('appearanceChips', customBordersGeneral, formState.appearance || customBordersGeneral[0], v => { formState.appearance = v; updateAiPreview(); }, () => addCustom('borderGeneral'), 'borderGeneral');
-      renderChips('conditionChips', ['A', 'B', '展示用'], formState.condition, v => { formState.condition = v; updateAiPreview(); });
-
-    } else if (currentCategory === '前後蓋') {
-      showFields(['fg-modelNo', 'fg-diameter', 'fg-brand', 'fg-appearance', 'fg-condition', 'fg-location']);
-      document.getElementById('lbl-appearance').innerText = '外觀';
-
-      renderChips('brandChips', customBrands, formState.brand, v => { formState.brand = v; updateAiPreview(); }, () => addCustom('brand'), 'brand');
-      renderChips('appearanceChips', ['銀', '黑'], formState.appearance || '黑', v => { formState.appearance = v; updateAiPreview(); });
-      renderChips('conditionChips', ['A', 'B'], formState.condition, v => { formState.condition = v; updateAiPreview(); });
-
-    } else if (currentCategory === '配件雜項') {
-      showFields(['fg-accessoryType', 'fg-modelNo', 'fg-diameter', 'fg-brand', 'fg-condition', 'fg-conditionRemark', 'fg-location']);
-
-      renderChips('accessoryTypeChips', customAccessoryTypes, formState.accessoryType, v => { formState.accessoryType = v; updateAiPreview(); }, () => addCustom('accType'), 'accType');
-      renderChips('brandChips', customBrands, formState.brand, v => { formState.brand = v; updateAiPreview(); }, () => addCustom('brand'), 'brand');
-      renderChips('conditionChips', ['A', 'B', '展示用'], formState.condition, v => { formState.condition = v; updateAiPreview(); });
-    }
-
-    renderChips('soldChips', ['在庫中', '已售出'], formState.isSold ? '已售出' : '在庫中', v => {
-      formState.isSold = (v === '已售出');
-      updateAiPreview();
-    });
-
-    showStep(2);
-    updateAiPreview();
-
-    ['modelNo', 'diameter', 'functionText', 'conditionRemark', 'location'].forEach(id => {
-      document.getElementById(id).oninput = updateAiPreview;
-    });
-  }
-
-  function showFields(fieldIds) {
-    fieldIds.forEach(id => {
-      const el = document.getElementById(id);
-      if (el) el.classList.remove('hidden');
-    });
-  }
-
-  // 渲染 Chip 標籤與設定長按/右鍵編輯與刪除
-  function renderChips(containerId, options, currentValue, onClick, onAdd, type) {
-    const container = document.getElementById(containerId);
-
-    let isPreset = (val) => {
-      if (type === 'brand') return presetBrands.includes(val);
-      if (type === 'borderFilter') return presetBordersFilter.includes(val);
-      if (type === 'borderGeneral') return presetBordersGeneral.includes(val);
-      if (type === 'glass') return presetGlasses.includes(val);
-      if (type === 'accType') return presetAccTypes.includes(val);
-      return false;
-    };
-
-    let html = options.map(opt => {
-      return `<div class="chip ${opt === currentValue ? 'active' : ''}" data-value="${opt}">${opt}</div>`;
-    }).join('');
-
-    if (onAdd) html += `<div class="chip chip-add">＋自訂</div>`;
-    container.innerHTML = html;
-
-    const chips = container.querySelectorAll('.chip:not(.chip-add)');
-    chips.forEach((chip, idx) => {
-      const val = options[idx];
-      
-      // 單擊選取
-      chip.addEventListener('click', () => {
-        container.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
-        chip.classList.add('active');
-        onClick(val);
+      card.addEventListener('touchstart', startPress);
+      card.addEventListener('touchend', cancelPress);
+      card.addEventListener('touchmove', cancelPress);
+      card.addEventListener('mousedown', startPress);
+      card.addEventListener('mouseup', cancelPress);
+      card.addEventListener('mouseleave', cancelPress);
+      card.addEventListener('contextmenu', (e) => {
+        e.preventDefault();
+        deleteEquipment(item.id, item.model);
       });
 
-      // 只有「自訂標籤」才允許右鍵/長按編輯與刪除
-      if (type && !isPreset(val)) {
-        // 電腦右鍵
-        chip.addEventListener('contextmenu', (e) => {
-          e.preventDefault();
-          manageCustomChip(type, val);
-        });
+      const isSold = item.status === '已售出';
+      const imgUrl = item.image || 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="%23666" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="12" cy="12" r="4"/></svg>';
 
-        // 平板 / 手機長按觸發
-        let timer;
-        chip.addEventListener('touchstart', () => {
-          timer = setTimeout(() => {
-            manageCustomChip(type, val);
-          }, 600);
-        }, { passive: true });
+      card.innerHTML = `
+        <img class="item-img" src="${imgUrl}" alt="photo">
+        <div class="item-info">
+          <div class="item-title">${item.brand ? item.brand + ' ' : ''}${item.model || '未命名'}</div>
+          <div class="item-sub">Condition: ${item.condition || '未設定'} | 位置: ${item.location || '未設定'}</div>
+        </div>
+        <span class="badge ${isSold ? 'badge-out' : 'badge-in'}">${isSold ? '已售出' : '在庫'}</span>
+      `;
+      list.appendChild(card);
+    });
+  }
 
-        chip.addEventListener('touchend', () => clearTimeout(timer));
-        chip.addEventListener('touchmove', () => clearTimeout(timer));
-      }
+  // 刪除產品功能
+  function deleteEquipment(id, name) {
+    if (confirm(`確定要刪除「${name || '此器材'}」嗎？`)) {
+      db = db.filter(item => item.id !== id);
+      localStorage.setItem('john_camera_db', JSON.stringify(db));
+      renderEquipmentList();
+      renderCategories();
+      syncToCloud();
+    }
+  }
+
+  // 顯示表單
+  function showForm(id = null) {
+    editingId = id;
+    document.getElementById('step2').classList.add('hidden');
+    document.getElementById('step3').classList.remove('hidden');
+
+    if (id) {
+      document.getElementById('formTitle').innerText = '編輯器材';
+      const item = db.find(x => x.id === id);
+      formState = { ...item };
+      currentImageData = item.image || '';
+    } else {
+      document.getElementById('formTitle').innerText = `新增 ${currentCategory}`;
+      formState = {
+        category: currentCategory,
+        brand: '',
+        model: '',
+        border: '',
+        glass: '',
+        accType: '',
+        condition: 'A',
+        package: '無', // 預設新增的「無」
+        functionDesc: '',
+        location: '',
+        status: '在庫'
+      };
+      currentImageData = '';
+    }
+
+    // 圖片預覽
+    const previewImg = document.getElementById('previewImg');
+    const placeholder = document.getElementById('uploadPlaceholder');
+    if (currentImageData) {
+      previewImg.src = currentImageData;
+      previewImg.classList.remove('hidden');
+      placeholder.classList.add('hidden');
+    } else {
+      previewImg.src = '';
+      previewImg.classList.add('hidden');
+      placeholder.classList.remove('hidden');
+    }
+
+    document.getElementById('model').value = formState.model || '';
+    document.getElementById('functionDesc').value = formState.functionDesc || '';
+    document.getElementById('location').value = formState.location || '';
+
+    // 動態開關欄位
+    const cat = editingId ? formState.category : currentCategory;
+    document.getElementById('groupBorders').style.display = (cat === 'Filter' || cat === '鏡頭') ? 'block' : 'none';
+    document.getElementById('groupGlasses').style.display = (cat === 'Filter') ? 'block' : 'none';
+    document.getElementById('groupAccType').style.display = (cat === '配件雜項') ? 'block' : 'none';
+
+    renderFormChips();
+    generateAiText();
+  }
+
+  // 渲染動態選項標籤 (包含自訂標籤長按刪除/修改)
+  function renderFormChips() {
+    const cat = editingId ? formState.category : currentCategory;
+
+    // 1. 品牌
+    renderChipGroup('brandChips', customBrands, formState.brand, val => formState.brand = val, true, (newArr) => {
+      customBrands = newArr;
+      localStorage.setItem('jcs_brands', JSON.stringify(customBrands));
     });
 
-    if (onAdd) container.querySelector('.chip-add').addEventListener('click', onAdd);
+    // 2. 邊框顏色
+    const borderList = (cat === 'Filter') ? customBordersFilter : customBordersGeneral;
+    renderChipGroup('borderChips', borderList, formState.border, val => formState.border = val, true, (newArr) => {
+      if (cat === 'Filter') { customBordersFilter = newArr; localStorage.setItem('jcs_border_filter', JSON.stringify(customBordersFilter)); }
+      else { customBordersGeneral = newArr; localStorage.setItem('jcs_border_general', JSON.stringify(customBordersGeneral)); }
+    });
+
+    // 3. 玻璃顏色
+    renderChipGroup('glassChips', customGlasses, formState.glass, val => formState.glass = val, true, (newArr) => {
+      customGlasses = newArr;
+      localStorage.setItem('jcs_glasses', JSON.stringify(customGlasses));
+    });
+
+    // 4. 配件類別
+    renderChipGroup('accTypeChips', customAccessoryTypes, formState.accType, val => formState.accType = val, true, (newArr) => {
+      customAccessoryTypes = newArr;
+      localStorage.setItem('jcs_acc_types', JSON.stringify(customAccessoryTypes));
+    });
+
+    // 5. Condition
+    renderChipGroup('conditionChips', ['S', 'A', 'B', 'C'], formState.condition, val => formState.condition = val);
+
+    // 6. 原裝包裝 (新增「無」選項)
+    renderChipGroup('packageChips', ['無', '有盒裝', '皮套/袋', '原廠盒裝'], formState.package, val => formState.package = val);
+
+    // 7. 售出紀錄
+    renderChipGroup('soldChips', ['在庫', '已售出'], formState.status, val => formState.status = val);
   }
 
-  // 管理自訂標籤（修改/刪除）
-  function manageCustomChip(type, targetValue) {
-    const action = prompt(`針對自訂標籤「${targetValue}」，請選擇操作：\n1. 輸入新名稱進行修改\n2. 直接清空輸入框或輸入 DELETE 即可刪除`, targetValue);
-    
-    if (action === null) return;
+  // 標籤渲染輔助函式
+  function renderChipGroup(containerId, options, currentValue, onSelect, allowCustom = false, onCustomUpdate = null) {
+    const container = document.getElementById(containerId);
+    container.innerHTML = '';
 
-    let listRef;
-    let storageKey;
+    options.forEach(opt => {
+      const chip = document.createElement('div');
+      chip.className = `chip ${currentValue === opt ? 'selected' : ''}`;
+      chip.innerText = opt;
+      chip.onclick = () => {
+        onSelect(opt);
+        renderFormChips();
+        generateAiText();
+      };
 
-    if (type === 'brand') { listRef = customBrands; storageKey = 'jcs_brands'; }
-    else if (type === 'borderFilter') { listRef = customBordersFilter; storageKey = 'jcs_border_filter'; }
-    else if (type === 'borderGeneral') { listRef = customBordersGeneral; storageKey = 'jcs_border_general'; }
-    else if (type === 'glass') { listRef = customGlasses; storageKey = 'jcs_glasses'; }
-    else if (type === 'accType') { listRef = customAccessoryTypes; storageKey = 'jcs_acc_types'; }
+      // 可自訂標籤支援長按/右鍵刪除與修改
+      if (allowCustom && onCustomUpdate) {
+        let timer = null;
+        const start = () => {
+          timer = setTimeout(() => handleCustomTagEdit(opt, options, onCustomUpdate), 700);
+        };
+        const cancel = () => { if (timer) clearTimeout(timer); };
 
-    if (!listRef) return;
+        chip.addEventListener('touchstart', start);
+        chip.addEventListener('touchend', cancel);
+        chip.addEventListener('touchmove', cancel);
+        chip.addEventListener('mousedown', start);
+        chip.addEventListener('mouseup', cancel);
+        chip.addEventListener('mouseleave', cancel);
+        chip.addEventListener('contextmenu', (e) => {
+          e.preventDefault();
+          handleCustomTagEdit(opt, options, onCustomUpdate);
+        });
+      }
 
-    const idx = listRef.indexOf(targetValue);
-    if (idx === -1) return;
+      container.appendChild(chip);
+    });
 
-    const trimmed = action.trim();
-
-    if (trimmed === '' || trimmed.toUpperCase() === 'DELETE') {
-      listRef.splice(idx, 1);
-      alert(`已刪除標籤「${targetValue}」`);
-    } else {
-      listRef[idx] = trimmed;
-      alert(`已將「${targetValue}」修改為「${trimmed}」`);
+    if (allowCustom && onCustomUpdate) {
+      const addBtn = document.createElement('div');
+      addBtn.className = 'chip chip-add';
+      addBtn.innerText = '+ 自訂';
+      addBtn.onclick = () => {
+        const val = prompt('請輸入新增標籤名稱：');
+        if (val && val.trim()) {
+          const trimmed = val.trim();
+          if (!options.includes(trimmed)) {
+            const updated = [...options, trimmed];
+            onCustomUpdate(updated);
+            onSelect(trimmed);
+            renderFormChips();
+            generateAiText();
+          }
+        }
+      };
+      container.appendChild(addBtn);
     }
-
-    localStorage.setItem(storageKey, JSON.stringify(listRef));
-    openForm(editingId);
   }
 
-  function addCustom(type) {
-    const val = prompt('請輸入要新增的選項名稱：');
-    if (val && val.trim()) {
-      const trimmed = val.trim();
-      if (type === 'brand' && !customBrands.includes(trimmed)) { customBrands.push(trimmed); localStorage.setItem('jcs_brands', JSON.stringify(customBrands)); }
-      if (type === 'borderFilter' && !customBordersFilter.includes(trimmed)) { customBordersFilter.push(trimmed); localStorage.setItem('jcs_border_filter', JSON.stringify(customBordersFilter)); }
-      if (type === 'borderGeneral' && !customBordersGeneral.includes(trimmed)) { customBordersGeneral.push(trimmed); localStorage.setItem('jcs_border_general', JSON.stringify(customBordersGeneral)); }
-      if (type === 'glass' && !customGlasses.includes(trimmed)) { customGlasses.push(trimmed); localStorage.setItem('jcs_glasses', JSON.stringify(customGlasses)); }
-      if (type === 'accType' && !customAccessoryTypes.includes(trimmed)) { customAccessoryTypes.push(trimmed); localStorage.setItem('jcs_acc_types', JSON.stringify(customAccessoryTypes)); }
-      openForm(editingId);
+  // 處理自訂標籤 修改/刪除
+  function handleCustomTagEdit(targetTag, currentList, onCustomUpdate) {
+    const action = prompt(`針對標籤「${targetTag}」進行操作：\n輸入 1：修改名稱\n輸入 2：刪除標籤`, '1');
+    if (action === '1') {
+      const newName = prompt('請輸入新名稱：', targetTag);
+      if (newName && newName.trim() && newName.trim() !== targetTag) {
+        const updated = currentList.map(item => item === targetTag ? newName.trim() : item);
+        onCustomUpdate(updated);
+        renderFormChips();
+      }
+    } else if (action === '2') {
+      if (confirm(`確定要刪除標籤「${targetTag}」嗎？`)) {
+        const updated = currentList.filter(item => item !== targetTag);
+        onCustomUpdate(updated);
+        renderFormChips();
+      }
     }
   }
 
+  // 圖片上傳處理
   function handleImageUpload(e) {
     const file = e.target.files[0];
     if (!file) return;
@@ -480,163 +538,98 @@
       const img = new Image();
       img.onload = function() {
         const canvas = document.createElement('canvas');
-        const MAX = 500;
-        let w = img.width, h = img.height;
-        if (w > MAX) { h *= MAX / w; w = MAX; }
-        canvas.width = w; canvas.height = h;
+        let width = img.width;
+        let height = img.height;
+        const max_size = 800;
+
+        if (width > height) {
+          if (width > max_size) { height *= max_size / width; width = max_size; }
+        } else {
+          if (height > max_size) { width *= max_size / height; height = max_size; }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
         const ctx = canvas.getContext('2d');
-        ctx.drawImage(img, 0, 0, w, h);
-        currentImageData = canvas.toDataURL('image/jpeg', 0.6);
-        updateImagePreview();
-        updateAiPreview();
+        ctx.drawImage(img, 0, 0, width, height);
+
+        currentImageData = canvas.toDataURL('image/jpeg', 0.7);
+        const previewImg = document.getElementById('previewImg');
+        previewImg.src = currentImageData;
+        previewImg.classList.remove('hidden');
+        document.getElementById('uploadPlaceholder').classList.add('hidden');
       };
       img.src = evt.target.result;
     };
     reader.readAsDataURL(file);
   }
 
-  function updateImagePreview() {
-    const box = document.getElementById('imgPreview');
-    const text = document.getElementById('imgText');
-    if (currentImageData) {
-      box.style.backgroundImage = `url('${currentImageData}')`;
-      text.innerText = '🔄 點擊換一張照片';
-    } else {
-      box.style.backgroundImage = 'none';
-      text.innerText = '📷 點擊拍攝或選擇照片';
-    }
-  }
+  // 自動產生 AI 賣場文字
+  function generateAiText() {
+    const model = document.getElementById('model').value.trim();
+    const func = document.getElementById('functionDesc').value.trim();
+    const cat = editingId ? formState.category : currentCategory;
 
-  function updateAiPreview() {
-    const model = document.getElementById('modelNo').value;
-    const dia = document.getElementById('diameter').value;
-    const funcTxt = document.getElementById('functionText').value;
-    const remark = document.getElementById('conditionRemark').value;
-    const loc = document.getElementById('location').value;
+    let titleParts = [];
+    if (formState.brand) titleParts.push(formState.brand);
+    if (model) titleParts.push(model);
+    if (cat === 'Filter' && formState.glass) titleParts.push(formState.glass);
 
-    let title = `【約翰相機行】${formState.brand || ''}`;
-    if (currentCategory === '配件雜項') title += ` ${formState.accessoryType}`;
-    if (model) title += ` ${model}`;
-    if (dia) title += ` (${dia}mm)`;
+    let text = `【 John Camera Store 】\n`;
+    text += `品名：${titleParts.join(' ') || '相機器材'}\n`;
+    text += `品項狀況：Condition ${formState.condition || 'A'}\n`;
+    if (formState.border) text += `外觀顏色：${formState.border}\n`;
+    if (formState.package) text += `原裝配件：${formState.package}\n`;
+    if (func) text += `功能說明：${func}\n`;
+    text += `\n二手品項均經過測試，歡迎細看圖片討論細節。`;
 
-    let details = [];
-    details.push(`- 分類：${currentCategory}`);
-    if (formState.functionChip) details.push(`- 功能：${formState.functionChip}`);
-    if (funcTxt) details.push(`- 功能描述：${funcTxt}`);
-    if (formState.appearance) details.push(`- 外觀/邊框：${formState.appearance}`);
-    if (currentCategory === 'Filter' && formState.glass) details.push(`- 玻璃顏色：${formState.glass}`);
-    details.push(`- Condition 品項：${formState.condition}`);
-    if (remark) details.push(`- Condition 備註：${remark}`);
-    if (formState.packaging) details.push(`- 原裝包裝：${formState.packaging}`);
-    if (loc) details.push(`- 存放位置：${loc}`);
-
-    let estPrice = 1000;
-    if (formState.brand === 'Leica') estPrice += 15000;
-    if (formState.condition === 'A') estPrice += 2000;
-
-    let text = `📦 賣場標題：\n${title}\n\n📋 規格資訊：\n${details.join('\n')}\n\n💰 AI 參考估價：NT$ ${estPrice.toLocaleString()}`;
     document.getElementById('aiPreview').innerText = text;
-  }
-
-  async function saveItem(e) {
-    e.preventDefault();
-    const newItem = {
-      id: editingId || Date.now().toString(),
-      category: currentCategory,
-      brand: formState.brand,
-      accessoryType: formState.accessoryType,
-      modelNo: document.getElementById('modelNo').value,
-      diameter: document.getElementById('diameter').value,
-      functionText: document.getElementById('functionText').value,
-      functionChip: formState.functionChip,
-      appearance: formState.appearance,
-      glass: formState.glass,
-      condition: formState.condition,
-      conditionRemark: document.getElementById('conditionRemark').value,
-      packaging: formState.packaging,
-      location: document.getElementById('location').value,
-      isSold: formState.isSold,
-      image: currentImageData
-    };
-
-    if (editingId) {
-      const idx = db.findIndex(i => i.id === editingId);
-      db[idx] = newItem;
-    } else {
-      db.push(newItem);
-    }
-
-    localStorage.setItem('john_camera_db', JSON.stringify(db));
-    selectCategory(currentCategory);
-    syncToCloud();
   }
 
   function copyAiText() {
     const text = document.getElementById('aiPreview').innerText;
-    navigator.clipboard.writeText(text);
-    alert('已成功複製 AI 賣場資訊！');
-  }
-
-  function handleSearch() {
-    const query = document.getElementById('searchInput').value.toLowerCase();
-    const resultsContainer = document.getElementById('searchResults');
-    const categoryList = document.getElementById('categoryList');
-
-    if (!query) {
-      resultsContainer.classList.add('hidden');
-      categoryList.classList.remove('hidden');
-      return;
-    }
-
-    const matches = db.filter(i => 
-      (i.modelNo && i.modelNo.toLowerCase().includes(query)) || 
-      (i.brand && i.brand.toLowerCase().includes(query)) ||
-      (i.location && i.location.toLowerCase().includes(query))
-    );
-
-    categoryList.classList.add('hidden');
-    resultsContainer.classList.remove('hidden');
-
-    if (matches.length === 0) {
-      resultsContainer.innerHTML = '<div style="text-align:center; color:var(--text-muted); margin-top:20px;">查無相關器材</div>';
-      return;
-    }
-
-    resultsContainer.innerHTML = matches.map(item => `
-      <div class="card" onclick="currentCategory='${item.category}'; openForm('${item.id}')">
-        <img src="${item.image || 'data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'50\' height=\'50\'><rect width=\'100%\' height=\'100%\' fill=\'%232a2a2a\'/></svg>'}" class="card-img-thumb" />
-        <div class="card-info">
-          <div class="card-title">${item.brand || ''} ${item.modelNo || item.accessoryType || ''} (${item.category})</div>
-          <div class="card-sub">位置: ${item.location || '未設定'}</div>
-        </div>
-        <span class="badge ${item.isSold ? 'badge-out' : 'badge-in'}">${item.isSold ? '已售出' : '在庫'}</span>
-      </div>
-    `).join('');
-  }
-
-  function goBack() {
-    const step1 = !document.getElementById('step1').classList.contains('hidden');
-    const step2 = !document.getElementById('step2').classList.contains('hidden');
-
-    if (step2) {
-      showStep(1);
-      document.getElementById('headerTitle').innerText = `${currentCategory} 總覽`;
-    } else if (step1) {
-      showStep(0);
-      document.getElementById('headerTitle').innerText = '約翰相機行';
-      document.getElementById('backBtn').style.display = 'none';
-      renderCategories();
-    }
-  }
-
-  function showStep(stepNum) {
-    [0, 1, 2].forEach(n => {
-      document.getElementById(`step${n}`).classList.toggle('hidden', n !== stepNum);
+    navigator.clipboard.writeText(text).then(() => {
+      alert('已複製賣場內文至剪貼簿！');
     });
   }
 
-  renderCategories();
+  // 儲存表單
+  function handleFormSubmit(e) {
+    e.preventDefault();
+
+    const newItem = {
+      id: editingId || Date.now().toString(),
+      category: editingId ? formState.category : currentCategory,
+      brand: formState.brand,
+      model: document.getElementById('model').value.trim(),
+      border: formState.border,
+      glass: formState.glass,
+      accType: formState.accType,
+      condition: formState.condition,
+      package: formState.package,
+      functionDesc: document.getElementById('functionDesc').value.trim(),
+      location: document.getElementById('location').value.trim(),
+      status: formState.status || '在庫',
+      image: currentImageData,
+      updatedAt: new Date().toLocaleString()
+    };
+
+    if (editingId) {
+      const idx = db.findIndex(x => x.id === editingId);
+      if (idx !== -1) db[idx] = newItem;
+    } else {
+      db.unshift(newItem);
+    }
+
+    localStorage.setItem('john_camera_db', JSON.stringify(db));
+    showStep2();
+    renderCategories();
+    syncToCloud();
+  }
+
+  // 初始化載入
   fetchCloudData();
+  renderCategories();
 </script>
 </body>
 </html>
